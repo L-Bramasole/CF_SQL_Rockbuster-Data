@@ -1,0 +1,96 @@
+1. Rockbuster’s management team would like to know the top 10 countries where Rockbuster customers are based :
+
+SELECT 
+  D.country, 
+  COUNT(customer_id) AS customer_count
+FROM customer A
+INNER JOIN address B ON A.address_id = B.address_id
+INNER JOIN city C ON B.city_id = C.city_id
+INNER JOIN country D ON C.country_ID = D.country_ID
+GROUP BY D.country
+ORDER BY customer_count DESC
+LIMIT 10;
+
+2. write a query to identify the top 10 cities that fall within the top 10 countries you identified in step
+WITH  Top10_countries (country) AS (SELECT 
+  D.country, 
+  COUNT(customer_id) AS customer_count
+FROM customer A
+INNER JOIN address B ON A.address_id = B.address_id
+INNER JOIN city C ON B.city_id = C.city_id
+INNER JOIN country D ON C.country_ID = D.country_ID
+GROUP BY D.country
+ORDER BY customer_count DESC
+LIMIT 10)
+
+SELECT 
+  D.country, 
+  C.city,
+  COUNT(customer_id) AS customer_count
+FROM customer A
+INNER JOIN address B ON A.address_id = B.address_id
+INNER JOIN city C ON B.city_id = C.city_id
+INNER JOIN country D ON C.country_ID = D.country_ID
+WHERE D.country IN ( SELECT country FROM  Top10_countries
+)
+GROUP BY D.country, C.city
+ORDER BY customer_count DESC
+LIMIT 10;
+
+3. write a query to find the top 5 customers from the top 10 cities who’ve paid the highest total amounts to Rockbuster
+WITH top_cities AS (
+  SELECT D.city
+  FROM payment A
+  INNER JOIN customer B ON A.customer_id = B.customer_id
+  INNER JOIN address C ON B.address_id = C.address_id
+  INNER JOIN city D ON C.city_id = D.city_id
+  GROUP BY D.city
+  ORDER BY SUM(A.amount) DESC
+  LIMIT 10
+)
+SELECT
+  A.customer_id,
+  SUM(A.amount) AS total_paid,
+  B.first_name,
+  B.last_name,
+  D.city,
+  E.country
+FROM payment A
+INNER JOIN customer B ON A.customer_id = B.customer_id
+INNER JOIN address C ON B.address_id = C.address_id
+INNER JOIN city D ON C.city_id = D.city_id
+INNER JOIN country E ON D.country_id = E.country_id
+WHERE D.city IN (SELECT city FROM top_cities)
+GROUP BY A.customer_id, B.first_name, B.last_name, D.city, E.country
+ORDER BY total_paid DESC
+LIMIT 5;
+
+4. The payment average of the top 5 paying customers
+WITH top5_paying_customers (customer_id) AS (SELECT A.customer_id
+  FROM payment A
+  GROUP BY A.customer_id
+  ORDER BY SUM(A.amount) DESC
+  LIMIT 5)
+SELECT A.customer_id,  B.first_name, B.last_name, AVG(A.amount) AS avg_payment_top5
+FROM payment A
+INNER JOIN customer B ON A.customer_id = B.customer_id
+WHERE A.customer_id IN (SELECT customer_id  FROM top5_paying_customers 
+) 
+GROUP BY A.customer_id, B.first_name, B.last_name;
+
+5. Find out how many of the top 5 customers you identified in step 1 are based within each country.
+WITH  top5 (customer_id)  AS (SELECT A.customer_id
+  FROM payment A
+  GROUP BY A.customer_id
+  ORDER BY SUM(A.amount) DESC
+  LIMIT 5)
+SELECT 
+  E.country,
+  COUNT(DISTINCT B.customer_id) AS all_customer_count,
+  COUNT(DISTINCT top5.customer_id) AS top_customer_count
+FROM customer B
+INNER JOIN address C ON B.address_id = C.address_id
+INNER JOIN city D ON C.city_id = D.city_id
+INNER JOIN country E ON D.country_id = E.country_id
+LEFT JOIN top5 ON B.customer_id = top5.customer_id
+GROUP BY E.country ORDER BY top_customer_count DESC;
