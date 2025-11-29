@@ -1,0 +1,70 @@
+-- to find missing values from film tables in dvdrentl databse--
+SELECT 
+  COUNT(*) AS total_rows,
+  COUNT(film_id) AS non_null_film_id,
+  COUNT(NULLIF(TRIM(title), '')) AS non_empty_title,
+  COUNT(NULLIF(TRIM(description), '')) AS non_empty_description,
+  COUNT(release_year) AS non_null_release_year,
+  COUNT(language_id) AS non_null_language_id,
+  COUNT(rental_duration) AS non_null_rental_duration,
+  COUNT(rental_rate) AS non_null_rental_rate,
+  COUNT(length) AS non_null_length,
+  COUNT(replacement_cost) AS non_null_replacement_cost,
+  COUNT(NULLIF(TRIM(rating), '')) AS non_empty_rating,
+  COUNT(last_update) AS non_null_last_update,
+  COUNT(NULLIF(TRIM(special_features::text), '')) AS non_empty_special_features,
+  COUNT(NULLIF(TRIM(fulltext::text), '')) AS non_empty_fulltext,
+  COUNT(NULLIF(TRIM(film_imdb), '')) AS non_empty_film_imdb
+FROM film;
+
+** two values of the column length were missing. Since thy are only two, I would do a research to find the length of the two movies and I would write them. 
+If many values would have been missing, I would exclude them from my analysis since it would be unrealistic in my opinion to impute average. 
+
+-- to find missing values from customer tables in dvdrentl databse--
+SELECT column_name
+FROM information_schema.columns
+WHERE table_name = 'customer'
+  AND table_schema = 'public';  -- optional, if your table is in the public schema
+SELECT 
+
+SELECT 
+  COUNT(*) AS total_rows,
+  COUNT(customer_id) AS non_null_customer_id,
+  COUNT(store_id) AS non_null_store_id,
+  COUNT(NULLIF(TRIM(first_name), '')) AS non_empty_first_name,
+  COUNT(NULLIF(TRIM(last_name), '')) AS non_empty_last_name,
+  COUNT(NULLIF(TRIM(email), '')) AS non_empty_email,
+  COUNT(address_id) AS non_null_address_id,
+  COUNT(activebool) AS non_null_activebool,
+  COUNT(create_date) AS non_null_create_date,
+  COUNT(last_update) AS non_null_last_update,
+  COUNT(active) AS non_null_active
+FROM customer;
+
+-- to find duplicates from film table--
+SELECT 
+  title, 
+  release_year, 
+  language_id, 
+  length, 
+  COUNT(*) AS duplicate_count
+FROM film
+GROUP BY title, release_year, language_id, length
+HAVING COUNT(*) > 1;
+
+**one duplicate was found. I would use the folowing syntax to delete duplicates one or more:
+DELETE FROM film
+WHERE film_id NOT IN (
+  SELECT MIN(film_id)
+  FROM film
+  GROUP BY title, release_year, language_id, length);
+
+-- to find duplicates from customer table--
+
+SELECT first_name, last_name, email, 
+COUNT(*) AS duplicate_count 
+FROM customer 
+GROUP BY first_name, last_name, email 
+HAVING COUNT(*) > 1;
+
+**no duplicates were found
