@@ -1,0 +1,47 @@
+--Descriptive statistics for customer table--
+SELECT
+  -- Rental Duration
+  MAX(rental_duration) AS max_rental_duration,
+  MIN(rental_duration) AS min_rental_duration,
+  AVG(rental_duration) AS avg_rental_duration,
+
+  -- Rental Rate
+  MAX(rental_rate) AS max_rental_rate,
+  MIN(rental_rate) AS min_rental_rate,
+  AVG(rental_rate) AS avg_rental_rate,
+
+  -- Length
+  MAX(length) AS max_length,
+  MIN(length) AS min_length,
+  AVG(length) AS avg_length,
+
+  -- Replacement Cost
+  MAX(replacement_cost) AS max_replacement_cost,
+  MIN(replacement_cost) AS min_replacement_cost,
+  AVG(replacement_cost) AS avg_replacement_cost,
+
+  -- Release Year
+  MAX(release_year) AS max_release_year,
+  MIN(release_year) AS min_release_year
+FROM film;
+
+SELECT mode() WITHIN GROUP (ORDER BY rating) AS most_common_rating
+FROM film;
+
+--Descriptive statistics for customer table--
+SELECT mode() WITHIN GROUP (ORDER BY store_id) AS most_common_stores
+FROM customer;
+
+SELECT 
+MAX (address_id) as max_address,
+MIN (address_id) as min_address
+FROM customer;
+
+OR
+SELECT customer_id, address_id
+FROM customer
+WHERE address_id = (SELECT MAX(address_id) FROM customer);
+SELECT customer_id, address_id
+FROM customer
+WHERE address_id = (SELECT MIN(address_id) FROM customer);
+
