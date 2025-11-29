@@ -1,0 +1,79 @@
+### What are the minimum and maximum rental durations for each rating category?
+**SQL Code**
+SELECT rating,
+       MAX(rental_duration) AS max_duration,
+       MIN(rental_duration) AS min_duration
+FROM film
+GROUP BY rating;
+
+### What is the average rental rate for each rating category?
+**SQL Code**
+SELECT rating,
+       	AVG(rental_rate) AS avg_rental
+      FROM film
+      GROUP BY rating;
+
+# 3.5 filtering and condetioning
+
+   ### A. Film title contains the word Uptown in any position
+SELECT film_id,
+       title,
+       description
+	   FROM film
+	   WHERE title LIKE '%Uptown%';
+
+   ### B. Film length is more than 120 minutes and rental rate is more than 2.99
+SELECT film_id,
+       title,
+       description
+	   FROM film
+	   WHERE length >120 AND rental_rate>2.99;
+
+   ### C. Rental duration is between 3 and 7 days (where 3 and 7 aren’t inclusive)
+SELECT film_id,
+       title,
+       description
+	   FROM film
+	   WHERE rental_duration BETWEEN 4 AND 6;
+
+   ### D. Film replacement cost is less than 14.99
+SELECT film_id,
+       title,
+       description
+	   FROM film
+	   WHERE replacement_cost <14.99;
+
+   ### E.1 Film rating is either PG or G
+SELECT film_id,
+       title,
+       description
+FROM film
+WHERE rating IN ('PG', 'G');
+
+   ### E.2 Film rating PG or G descriptive statistics
+SELECT 
+  film_id,
+  title,
+  description,
+  COUNT(film_id) OVER (PARTITION BY rating) AS count_of_movies,
+  AVG(rental_rate) OVER (PARTITION BY rating) AS average_movie_rental_rate,
+  MAX(rental_duration) OVER (PARTITION BY rating) AS maximum_rental_duration,
+  MIN(rental_duration) OVER (PARTITION BY rating) AS minimum_rental_duration
+FROM film
+WHERE rating IN ('PG', 'G');
+
+   ### E.3 Film rating PG or G descriptive statistics grouped by Rating
+SELECT 
+  rating,
+  COUNT(*) AS count_of_movies,
+  AVG(rental_rate) AS average_movie_rental_rate,
+  MAX(rental_duration) AS maximum_rental_duration,
+  MIN(rental_duration) AS minimum_rental_duration
+FROM film
+WHERE rating IN ('PG', 'G')
+GROUP BY rating;
+
+
+
+
+
